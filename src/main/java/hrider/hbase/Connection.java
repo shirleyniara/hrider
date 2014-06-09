@@ -11,12 +11,9 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
-import org.apache.hadoop.hbase.io.encoding.DataBlockEncoding;
 import org.apache.hadoop.hbase.io.hfile.CacheConfig;
-import org.apache.hadoop.hbase.io.hfile.HFile;
 import org.apache.hadoop.hbase.regionserver.StoreFile;
 import org.apache.hadoop.hbase.regionserver.StoreFileScanner;
-import org.apache.hadoop.hbase.regionserver.metrics.SchemaMetrics;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.IOException;
@@ -347,7 +344,7 @@ public class Connection {
         cacheConfig.setFloat(HConstants.HFILE_BLOCK_CACHE_SIZE_KEY, 0.0f);
 
         StoreFile.Writer writer = new StoreFile.WriterBuilder(
-            this.getConfiguration(), new CacheConfig(cacheConfig), fs, HFile.DEFAULT_BLOCKSIZE).withFilePath(new Path(path)).build();
+            this.getConfiguration(), new CacheConfig(cacheConfig), fs, HColumnDescriptor.DEFAULT_BLOCKSIZE).withFilePath(new Path(path)).build();
 
         ResultScanner scanner = null;
 
@@ -422,11 +419,11 @@ public class Connection {
             families.add(new ColumnFamily(column));
         }
 
-        StoreFile.Reader reader = new StoreFile.Reader(fs, new Path(path), new CacheConfig(this.getConfiguration()), DataBlockEncoding.NONE);
+        StoreFile.Reader reader = new StoreFile.Reader(fs, new Path(path), new CacheConfig(this.getConfiguration()));
 
         try {
             StoreFileScanner scanner = reader.getStoreFileScanner(false, false);
-            SchemaMetrics.configureGlobally(this.getConfiguration());
+            //SchemaMetrics.configureGlobally(this.getConfiguration());
 
             // move to the first row.
             scanner.seek(new KeyValue(new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}));
